@@ -28,7 +28,6 @@ jobs:
         run: |
           newman run postman-collection.json \
             -e postman-environment-variables.json \
-            -r htmlextra \
             --reporter-htmlextra-export newman-report.html
 
       - name: Upload HTML report
