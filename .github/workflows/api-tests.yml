@@ -19,7 +19,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'      # match your local version
+          node-version: '18'      # match your local vers
 
       - name: Install Newman + Reporter
         run: npm install -g newman newman-reporter-htmlextra
