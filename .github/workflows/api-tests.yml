@@ -26,13 +26,13 @@ jobs:
 
       - name: Run tests and generate HTML report
         run: |
-          newman run tests/postman-collection.json \
-            -e tests/postman-environment-variables.json \
+          newman run postman-collection.json \
+            -e postman-environment-variables.json \
             -r htmlextra \
-            --reporter-htmlextra-export tests/newman-report.html
+            --reporter-htmlextra-export newman-report.html
 
       - name: Upload HTML report
         uses: actions/upload-artifact@v4
         with:
           name: api-test-report
-          path: tests/newman-report.html
+          path: newman-report.html
