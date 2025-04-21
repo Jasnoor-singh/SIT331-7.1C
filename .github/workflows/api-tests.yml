@@ -1,36 +1,60 @@
 name: API Tests
 
-# Trigger on every push or pull‑request to main (adjust your branch names)
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  push:    { branches: [ main ] }
+  pull_request: { branches: [ main ] }
 
 jobs:
   run-postman-tests:
-    name: Run Postman/Newman API tests
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
+      # 1. Checkout code
+      - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'      # match your local vers
+      # 2. Setup Node (for Newman)
+      - uses: actions/setup-node@v4
+        with: { node-version: '18' }
 
-      - name: Install Newman + Reporter
+      # 3. Setup .NET (for your API)
+      - uses: actions/setup-dotnet@v3
+        with: { dotnet-version: '8.0.x' } # or whatever you target
+
+      # 4. Build your API project
+      - name: Build .NET API
+        run: dotnet build --configuration Release
+
+      # 5. Run your API in the background
+      - name: Start API
+        run: |
+          # Adjust the path to your project file if needed
+          dotnet run --project ./YourApiProject/YourApiProject.csproj \
+            --urls http://localhost:5169 &
+
+      # 6. Wait for the API to be ready
+      - name: Wait for API to be live
+        run: |
+          n=0
+          until curl --silent --fail http://localhost:5169/health || [ $n -ge 15 ]; do
+            echo "Waiting for API to start..."
+            n=$((n+1))
+            sleep 2
+          done
+
+      # 7. Install Newman & reporter
+      - name: Install Newman
         run: npm install -g newman newman-reporter-htmlextra
 
-      - name: Run tests and generate HTML report
+      # 8. Run your Postman collection
+      - name: Run Newman tests
         run: |
           newman run postman-collection.json \
             -e postman-environment-variables.json \
+            -r htmlextra \
             --reporter-htmlextra-export newman-report.html
 
-      - name: Upload HTML report
+      # 9. Upload the HTML report
+      - name: Upload report
         uses: actions/upload-artifact@v4
         with:
           name: api-test-report
