@@ -1,0 +1,242 @@
+{
+	"info": {
+		"_postman_id": "390b1154-d955-4de4-876a-7e340479d526",
+		"name": "SIT331 Automated Testing",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "41773849"
+	},
+	"item": [
+		{
+			"name": "List Commands",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Status 200",
+							"pm.test(\"Status is 200 OK\", () => pm.response.to.have.status(200));",
+							"",
+							"// Body array check",
+							"const list = pm.response.json();",
+							"pm.test(\"Body is non‑empty array\", () => {",
+							"  pm.expect(list).to.be.an('array').that.is.not.empty;",
+							"});",
+							"",
+							"// Persist full list for later",
+							"pm.environment.set(\"robot_list\", pm.response.text());",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/robotcommands",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"robotcommands"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get One Command",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Pull first id out of saved list",
+							"const raw = pm.environment.get(\"robot_list\");",
+							"if (raw) {",
+							"  const arr = JSON.parse(raw);",
+							"  if (arr.length) pm.environment.set(\"robot_id\", arr[0].id);",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+							"",
+							"pm.test(\"Object has id, name, description\", () => {",
+							"  const cmd = pm.response.json();",
+							"  pm.expect(cmd).to.include.all.keys('id','name','description');",
+							"  pm.expect(cmd.id).to.eql(pm.environment.get(\"robot_id\"));",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/robotcommands/{{robot_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"robotcommands",
+						"{{robot_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Item",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// 1. Should be 201 Created",
+							"pm.test(\"Status = 201\", () => pm.response.to.have.status(201));",
+							"",
+							"// 2. Parse JSON",
+							"const cmd = pm.response.json();",
+							"",
+							"// 3. Save the TRUE new ID (e.g. 12, 13…)",
+							"pm.environment.set(\"new_robot_id\", cmd.id);",
+							"console.log(\"🔖 new_robot_id set to\", cmd.id);",
+							"",
+							"// 4. Basic sanity check",
+							"pm.test(\"Has id & expected keys\", () => {",
+							"  pm.expect(cmd).to.include.all.keys(\"id\",\"name\",\"description\",\"isMoveCommand\");",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"slinggs\",\n  \"description\": \"A sling\",\n  \"isMoveCommand\": true\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/robotcommands",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"robotcommands"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Item",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status = 200 OK\", () => pm.response.to.have.status(200));",
+							"const updated = pm.response.json();",
+							"const expectedId = parseInt(pm.environment.get(\"new_robot_id\"),10);",
+							"pm.test(\"ID matches\", () => pm.expect(updated.id).to.eql(expectedId));",
+							"pm.test(\"Name updated\", () => pm.expect(updated.name).to.eql(\"round\"));",
+							"pm.test(\"isMoveCommand false\", () => pm.expect(updated.isMoveCommand).to.be.false);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"round\",\n  \"description\": \"round via postman \",\n  \"isMoveCommand\": false,\n  \"createdDate\": \"2025-04-21T10:12:32\",\n  \"modifiedDate\": \"2025-04-21T11:23:12\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/robotcommands/{{new_robot_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"robotcommands",
+						"{{new_robot_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Item",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status = 204 No Content\", () => pm.response.to.have.status(204));"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/robotcommands/{{new_robot_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"robotcommands",
+						"{{new_robot_id}}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

@@ -1,0 +1,33 @@
+{
+	"id": "cfc6702e-c1ae-4e6b-a0da-5ba97c632dd0",
+	"name": "Autmated Baceknd",
+	"values": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:5169/api",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "robot_id",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "new_robot_id",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "robot_list",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		}
+	],
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2025-04-21T06:51:07.338Z",
+	"_postman_exported_using": "Postman/11.40.0"
+}
